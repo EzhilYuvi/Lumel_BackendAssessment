@@ -8,11 +8,14 @@ namespace Lumel_BackendAssessment.Infrastructure.Repositories
 {
     public class RavenOrderRepository : IOrderRepository
     {
-        // Writes intentionally disabled
-        public Task AddAsync(IEnumerable<Order> orders)
+        public async Task AddAsync(IEnumerable<Order> orders)
         {
-            throw new NotSupportedException(
-                "Order writes are handled via BulkInsert in DataRefreshService.");
+            using var bulk = DocumentStoreHolder.Store.BulkInsert();
+
+            foreach (var order in orders)
+            {
+                await bulk.StoreAsync(order);
+            }
         }
 
         public async Task<IReadOnlyList<Order>> GetByDateRangeAsync(DateTime from, DateTime to)

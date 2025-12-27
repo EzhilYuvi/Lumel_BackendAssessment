@@ -5,26 +5,38 @@ namespace Lumel_BackendAssessment.Controllers
 {
     [ApiController]
     [Route("api/analytics")]
-    public class AnalyticsController(RevenueCalculationService revenueService) : ControllerBase
+    public class AnalyticsController : ControllerBase
     {
-        private readonly RevenueCalculationService _revenueService = revenueService;
+        private readonly RevenueCalculationService _service;
+
+        public AnalyticsController(RevenueCalculationService service)
+        {
+            _service = service;
+        }
 
         [HttpGet("revenue")]
-        public async Task<IActionResult> GetRevenue(
-            [FromQuery] DateTime from,
-            [FromQuery] DateTime to)
+        public async Task<IActionResult> GetTotalRevenue(DateTime from, DateTime to)
         {
-            if (from > to)
-                return BadRequest("'from' date must be earlier than 'to' date.");
+            var result = await _service.GetTotalRevenueAsync(from, to);
+            return Ok(result);
+        }
 
-            var totalRevenue = await _revenueService.CalculateTotalRevenueAsync(from, to);
+        [HttpGet("revenue/by-product")]
+        public async Task<IActionResult> ByProduct(DateTime from, DateTime to)
+        {
+            return Ok(await _service.GetRevenueByProductAsync(from, to));
+        }
 
-            return Ok(new
-            {
-                from,
-                to,
-                totalRevenue
-            });
+        [HttpGet("revenue/by-category")]
+        public async Task<IActionResult> ByCategory(DateTime from, DateTime to)
+        {
+            return Ok(await _service.GetRevenueByCategoryAsync(from, to));
+        }
+
+        [HttpGet("revenue/by-region")]
+        public async Task<IActionResult> ByRegion(DateTime from, DateTime to)
+        {
+            return Ok(await _service.GetRevenueByRegionAsync(from, to));
         }
     }
 }
